@@ -21,10 +21,14 @@ defaults, then run:
 docker compose up --build
 ```
 
-Open <http://localhost:8080>. Readiness is available at
-<http://localhost:8080/health/ready>. Stop the stack with
+With the example environment, open <http://localhost:51201>. Readiness is
+available at <http://localhost:51201/health/ready>. Stop the stack with
 `docker compose down`; the named PostgreSQL volume is retained. Use
 `docker compose down --volumes` only when intentionally deleting local data.
+
+`APP_PORT` controls the application's loopback-only host port. PostgreSQL stays
+inside the Compose network unless the development override described below is
+used.
 
 ## Run Go on the host
 
@@ -39,11 +43,10 @@ set +a
 go run ./cmd/server
 ```
 
-The base Compose file does not expose PostgreSQL. The development override
-publishes it only on `127.0.0.1`; do not use that override in production.
-If port 5432 is already in use, choose another loopback port for both commands,
-for example `POSTGRES_PORT=55432 docker compose -f compose.yaml -f
-compose.dev-db.yaml up -d db` and set port `55432` in `DATABASE_URL`.
+The base Compose file does not expose PostgreSQL. The development override uses
+`POSTGRES_PORT` to publish it only on `127.0.0.1`; do not use that override in
+production. `.env.example` uses port 51202 consistently for the override and
+the host application's `DATABASE_URL`.
 
 ## Build and test
 
@@ -67,11 +70,20 @@ tests will require PostgreSQL, but will not require the application container.
 ## Configuration
 
 - `APP_ENV` (required): `development`, `test` or `production`
-- `HTTP_ADDR`: listen address, defaults to `:8080`
-- `DATABASE_URL` (required): PostgreSQL connection URL; never log or commit it
 - `LOG_LEVEL`: `debug`, `info`, `warn` or `error`; defaults to `info`
 - `SESSION_COOKIE_SECURE`: defaults to `true` in production and cannot be
   disabled there
+- `APP_PORT`: loopback-only host port published by the app container
+- `POSTGRES_PORT`: loopback-only host port published by the dev DB override
+- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`: development database
+  name and credentials used by Compose
+- `HTTP_ADDR`: listen address used when Go runs directly on the host
+- `DATABASE_URL`: PostgreSQL URL used when Go runs directly on the host; never
+  log or commit production credentials
+
+Compose deliberately gives the app container its internal `:8080` listener and
+`db:5432` database address. `APP_PORT` and `POSTGRES_PORT` map those internal
+ports to the host, while `HTTP_ADDR` and `DATABASE_URL` are for host Go runs.
 
 The committed `.env.example` contains local-only values, not production
 credentials.
