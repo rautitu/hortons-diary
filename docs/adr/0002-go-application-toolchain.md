@@ -10,7 +10,7 @@ PostgreSQL access, schema changes and styling. Exact dependency versions should
 be pinned only when implementation starts, so they can be checked against
 supported releases at that time.
 
-## Proposed decision
+## Decision
 
 Use Go 1.27 (latest patch), chi v5, `html/template`, pgx v5 with sqlc, Goose v3
 SQL migrations, and hand-written semantic CSS. Serve a pinned local copy of
@@ -30,3 +30,6 @@ small first UI; both choices can be revisited with concrete evidence.
 
 Authentication, registration and deployment are recorded separately in
 `docs/decisions.md`.
+
+Phase 2 pinned Go 1.27.0, chi v5.2.3 and pgx v5.7.6. sqlc and Goose are
+intentionally deferred until phase 3 introduces queries and migrations.
