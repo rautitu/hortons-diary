@@ -13,7 +13,6 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/tonnomolt/hortons-diary/internal/attacks"
 	"github.com/tonnomolt/hortons-diary/internal/config"
 	"github.com/tonnomolt/hortons-diary/internal/httpserver"
 	webassets "github.com/tonnomolt/hortons-diary/web"
@@ -34,11 +33,11 @@ func main() {
 
 func run() error {
 	//TEMP TEST BEGINS
-	record, err := attacks.NewPainRecord(time.Now(), 8, 45)
-	if err != nil {
-		return fmt.Errorf("create demo record: %w", err)
-	}
-	fmt.Printf("Demo PainRecord: %+v", record)
+	//record, err := attacks.NewPainRecord(time.Now(), 8, 45)
+	//if err != nil {
+	//	return fmt.Errorf("create demo record: %w", err)
+	//}
+	//fmt.Printf("Demo PainRecord: %+v", record)
 	//TEMP TEST ENDS
 
 	cfg, err := config.Load()
