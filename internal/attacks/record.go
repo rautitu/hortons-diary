@@ -47,7 +47,7 @@ func NewPainRecord(
 	}, nil
 }
 
-func (r *PainRecord) Edit(
+func (r *PainRecord) EditPainRecord(
 	startTime time.Time,
 	severity int,
 	durationMinutes int,
