@@ -4,8 +4,8 @@ A privacy-conscious web application for recording cluster headache attacks and,
 later, viewing personal summaries and charts.
 
 Phase 2 provides a runnable Go application skeleton and PostgreSQL development
-environment. Diary features, authentication and database migrations are not
-implemented yet.
+environment. The initial database schema and versioned migration runner are included.
+Diary persistence and authentication handlers are not implemented yet.
 
 ## Requirements
 
@@ -97,4 +97,47 @@ credentials.
 
 The phase 1 product and deployment decisions have been confirmed. The current
 phase 2 skeleton follows the architecture blueprint without implementing phase
-3 schema or later product functionality.
+later product functionality beyond the initial schema.
+
+## Initialize the database schema
+
+Start PostgreSQL and apply migrations from the repository root:
+
+```sh
+make db-up
+# Wait until PostgreSQL is healthy, then:
+make db-migrate
+```
+
+For a database that should remain internal to Docker, use
+`docker compose up -d --wait db` instead of `make db-up`.
+The migration command connects inside the existing Compose database container;
+it does not require host PostgreSQL tools or a published database port.
+Use the same Compose project/environment as the database you intend to migrate.
+Docker image builds and application startup do not run migrations automatically.
+
+`migrations/0001_initial.sql` creates:
+
+- `users`: UUID `user_id`, case-insensitively unique `email`, `password_hash`,
+  and `created_at`. Store an Argon2id encoded hash, never a plaintext password.
+- `pain_record`: UUID `pain_record_id`, `user_id` foreign key, `start_time`,
+  positive `duration_minutes`, `severity` from 1 to 10, and `row_updated`.
+  A trigger updates `row_updated` on every update. An index supports each user's
+  chronological records. Deleting a user with records is deliberately restricted.
+- `sessions`: SHA-256 `session_token_hash` (32-byte BYTEA), `user_id`,
+  `created_at`, and `expires_at`. Generate cryptographically random session tokens;
+  store only their hash here, with the raw token in the browser cookie.
+  Authentication must reject expired sessions; the expiry index supports cleanup.
+
+IDs are supplied by Go, matching the current UUID types. All timestamps use
+`TIMESTAMPTZ`. Repository queries must scope reads and writes by the authenticated
+`user_id`; foreign keys alone do not enforce user isolation.
+
+The runner also maintains `schema_migrations`. Each migration and its tracking
+entry run in one transaction under an advisory lock. Re-running the command skips
+applied files, preserving existing data. Add new numbered SQL files for future
+changes; never edit an already-applied migration. There is no automatic down/reset
+command. Back up existing data before deploying schema changes.
+
+After applying migrations, run `make db-test` to check the database constraints,
+update trigger and deletion behavior against PostgreSQL. Test data is rolled back.
