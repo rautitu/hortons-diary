@@ -32,6 +32,14 @@ func main() {
 }
 
 func run() error {
+	//TEMP TEST BEGINS
+	//record, err := attacks.NewPainRecord(time.Now(), 8, 45)
+	//if err != nil {
+	//	return fmt.Errorf("create demo record: %w", err)
+	//}
+	//fmt.Printf("Demo PainRecord: %+v", record)
+	//TEMP TEST ENDS
+
 	cfg, err := config.Load()
 	if err != nil {
 		return fmt.Errorf("load configuration: %w", err)
