@@ -20,3 +20,11 @@ db-up:
 
 run:
 	go run ./cmd/server
+
+.PHONY: db-migrate
+db-migrate:
+	./scripts/migrate.sh
+
+.PHONY: db-test
+db-test:
+	docker compose exec -T db sh -c 'exec psql -X -v ON_ERROR_STOP=1 -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"' < tests/schema.sql
